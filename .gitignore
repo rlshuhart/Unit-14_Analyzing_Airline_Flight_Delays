@@ -1,1 +1,5 @@
 reports/.ipynb_checkpoints
+.Rproj.user
+reports/ryan_scratch.py
+*.Rproj
+.Rhistory
