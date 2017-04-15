@@ -1,0 +1,30 @@
+var_id,Name,Data Type,Description
+1,Year,int64,1987-2008
+2,Month,int64,"1 - 12"
+3,DayofMonth,int64,"1 - 31"
+4,DayOfWeek,int64,1 (Monday) - 7 (Sunday)
+5,DepTime,float64,"actual departure time (local, hhmm)"
+6,CRSDepTime,int64,"scheduled departure time (local, hhmm)"
+7,ArrTime,float64,"actual arrival time (local, hhmm)"
+8,CRSArrTime,int64,"scheduled arrival time (local, hhmm)"
+9,UniqueCarrier,O,unique carrier code
+10,FlightNum,int64,flight number
+11,TailNum,O,plane tail number
+12,ActualElapsedTime,float64,in minutes
+13,CRSElapsedTime,float64,in minutes
+14,AirTime,float64,in minutes
+15,ArrDelay,float64,"arrival delay, in minutes"
+16,DepDelay,float64,"departure delay, in minutes"
+17,Origin,O,origin IATA airport code
+18,Dest,O,destination IATA airport code
+19,Distance,float64,in miles
+20,TaxiIn,float64,"taxi in time, in minutes"
+21,TaxiOut,float64,taxi out time in minutes
+22,Cancelled,int64,was the flight cancelled?
+23,CancellationCode,O,"reason for cancellation (A = carrier, B = weather, C = NAS, D = security)"
+24,Diverted,int64,"1 = yes, 0 = no"
+25,CarrierDelay,float64,in minutes
+26,WeatherDelay,float64,in minutes
+27,NASDelay,float64,in minutes
+28,SecurityDelay,float64,in minutes
+29,LateAircraftDelay,float64,in minutes
