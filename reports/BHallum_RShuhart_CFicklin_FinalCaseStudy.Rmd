@@ -1,0 +1,136 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+## Install the packages we will use
+install.packages("bigmemory",
+                 dependencies = c("Depends", "Suggests", "Enhances"))
+```
+
+```{r}
+## Data sets are downloaded from the Data Expo '09 web site at
+## http://stat-computing.org/dataexpo/2009/the-data.html
+for (year in 1987:2008) {
+    file.name <- paste(year, "csv.bz2", sep = ".")
+    if ( !file.exists(file.name) ) {
+        url.text <- paste("http://stat-computing.org/dataexpo/2009/",
+                          year, ".csv.bz2", sep = "")
+        cat("Downloading missing data file ", file.name, "\n", sep = "")
+        download.file(url.text, file.name)
+    }
+}
+```
+
+```{r}
+## Read sample file to get column names and types
+d <- read.csv("2008.csv.bz2")
+integer.columns <- sapply(d, is.integer)
+factor.columns  <- sapply(d, is.factor)
+factor.levels   <- lapply(d[, factor.columns], levels)
+n.rows <- 0L
+```
+
+```{r}
+## Process each file determining the factor levels
+## TODO: Combine with next loop
+for (year in 1987:2008) {
+    file.name <- paste(year, "csv.bz2", sep = ".")
+    cat("Processing ", file.name, "\n", sep = "")
+    d <- read.csv(file.name)
+    n.rows <- n.rows + NROW(d)
+    new.levels <- lapply(d[, factor.columns], levels)
+    for ( i in seq(1, length(factor.levels)) ) {
+        factor.levels[[i]] <- c(factor.levels[[i]], new.levels[[i]])
+    }
+    rm(d)
+}
+save(integer.columns, factor.columns, factor.levels, file = "factors.RData")
+```
+```{r}
+## Now convert all factors to integers so we can create a bigmatrix of the data
+col.classes <- rep("integer", length(integer.columns))
+col.classes[factor.columns] <- "character"
+cols  <- which(factor.columns)
+first <- TRUE
+csv.file <- "airlines.csv"   # Write combined integer-only data to this file
+csv.con  <- file(csv.file, open = "w")
+
+for (year in 1987:2008) {
+    file.name <- paste(year, "csv.bz2", sep = ".")
+    cat("Processing ", file.name, "\n", sep = "")
+    d <- read.csv(file.name, colClasses = col.classes)
+    ## Convert the strings to integers
+    for ( i in seq(1, length(factor.levels)) ) {
+        col <- cols[i]
+        d[, col] <- match(d[, col], factor.levels[[i]])
+    }
+    write.table(d, file = csv.con, sep = ",", 
+                row.names = FALSE, col.names = first)
+    first <- FALSE
+}
+close(csv.con)
+```
+
+```{r}
+## Now convert to a big.matrix
+library("bigmemory")
+backing.file    <- "airlines.bin"
+descriptor.file <- "airlines.des"
+data <- read.big.matrix(csv.file, header = TRUE,
+                        type = "integer",
+                        backingfile = backing.file,
+                        descriptorfile = descriptor.file,
+                        extraCols = c("age"))
+```
+```{r}
+## Load required libraries
+library("biglm")
+library("bigmemory")
+library("biganalytics")
+library("bigtabulate")
+```
+
+```{r}
+## Use parallel processing if available
+## (Multicore is for "anything-but-Windows" platforms)
+if ( require("multicore") ) {
+    library("doMC")
+    registerDoMC()
+} else {
+    warning("Consider registering a multi-core 'foreach' processor.")
+}
+
+day.names <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+               "Saturday", "Sunday")
+```
+
+```{r}
+## Attach to the data
+descriptor.file <- "airlines.des"
+data <- attach.big.matrix(dget(descriptor.file))
+```
+
+```{r}
+## Replicate Table 5 in the Revolutions document:
+## Table 5
+t.5 <- bigtabulate(data,
+                   ccols = "DayOfWeek",
+                   summary.cols = "ArrDelay", summary.na.rm = TRUE)
+```
+
+```{r}
+## Pretty-fy the outout
+stat.names <- dimnames(t.5.2$summary[[1]])[2][[1]]
+t.5.p <- cbind(matrix(unlist(t.5$summary), byrow = TRUE,
+                      nrow = length(t.5$summary),
+                      ncol = length(stat.names),
+                      dimnames = list(day.names, stat.names)),
+               ValidObs = t.5$table)
+print(t.5.p)
+```
+
+```{r}
+## Figure 1
+plot(t.5.p[, "mean"], type = "l", ylab="Average arrival delay")
+```
