@@ -3,3 +3,4 @@ reports/.ipynb_checkpoints
 reports/ryan_scratch.py
 *.Rproj
 .Rhistory
+/data/*
