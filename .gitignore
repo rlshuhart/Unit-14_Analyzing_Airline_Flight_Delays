@@ -3,4 +3,6 @@ reports/.ipynb_checkpoints
 reports/ryan_scratch.py
 *.Rproj
 .Rhistory
-/data/*
+data/*/*.parquet
+data/*/_common_metadata
+data/*/_metadata
