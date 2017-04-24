@@ -6,3 +6,6 @@ reports/ryan_scratch.py
 data/*/*.parquet
 data/*/_common_metadata
 data/*/_metadata
+data/*/*/*.parquet
+data/*/*/_common_metadata
+data/*/*/_metadata
